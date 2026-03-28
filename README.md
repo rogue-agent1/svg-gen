@@ -1,8 +1,11 @@
 # svg-gen
-SVG image generator — vector graphics without libraries. Zero dependencies.
+
+Generate SVG graphics programmatically (shapes, text, paths)
+
 ## Usage
+
 ```bash
-python3 svg_gen.py spiral -o spiral.svg
-python3 svg_gen.py circles --seed 123
-python3 svg_gen.py grid
+python3 svg_gen.py --help
 ```
+
+Zero dependencies. Python 3.8+.

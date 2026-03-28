@@ -1,60 +1,57 @@
 #!/usr/bin/env python3
-"""SVG image generator — vector graphics without libraries."""
-import sys, math, random
+"""svg_gen - Programmatic SVG generation."""
+import argparse, sys, math
 
 class SVG:
-    def __init__(self, w=200, h=200):
-        self.w, self.h = w, h
-        self.elements = []
-    def rect(self, x, y, w, h, fill='black', **kw):
-        self.elements.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{fill}"/>')
-    def circle(self, cx, cy, r, fill='black', **kw):
-        self.elements.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{fill}"/>')
-    def line(self, x1, y1, x2, y2, stroke='black', width=1):
-        self.elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{width}"/>')
-    def text(self, x, y, txt, size=16, fill='black'):
-        self.elements.append(f'<text x="{x}" y="{y}" font-size="{size}" fill="{fill}">{txt}</text>')
-    def polygon(self, points, fill='black'):
-        pts = ' '.join(f'{x},{y}' for x,y in points)
-        self.elements.append(f'<polygon points="{pts}" fill="{fill}"/>')
+    def __init__(self, w=400, h=400):
+        self.w, self.h, self.elems = w, h, []
+    def rect(self, x, y, w, h, fill="black", stroke="none"):
+        self.elems.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{fill}" stroke="{stroke}"/>')
+    def circle(self, cx, cy, r, fill="black"):
+        self.elems.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{fill}"/>')
+    def line(self, x1, y1, x2, y2, stroke="black", width=1):
+        self.elems.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{width}"/>')
+    def text(self, x, y, txt, size=16, fill="black"):
+        self.elems.append(f'<text x="{x}" y="{y}" font-size="{size}" fill="{fill}">{txt}</text>')
+    def polygon(self, points, fill="black"):
+        pts = " ".join(f"{x},{y}" for x,y in points)
+        self.elems.append(f'<polygon points="{pts}" fill="{fill}"/>')
     def render(self):
-        body = '\n  '.join(self.elements)
-        return f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.w}" height="{self.h}">\n  {body}\n</svg>'
+        lines = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.w}" height="{self.h}">']
+        lines.extend(self.elems)
+        lines.append("</svg>")
+        return "\n".join(lines)
 
-def demo_circles(n=20):
+def demo_chart(output):
+    s = SVG(500, 300)
+    data = [40, 80, 60, 95, 50, 70, 85]
+    labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    bw = 50; gap = 10; base = 250
+    for i, v in enumerate(data):
+        x = 40 + i * (bw + gap)
+        h = v * 2
+        s.rect(x, base - h, bw, h, fill=f"hsl({i*50},70%,50%)")
+        s.text(x + 10, base + 20, labels[i], size=12)
+        s.text(x + 15, base - h - 5, str(v), size=11)
+    s.text(150, 30, "Weekly Stats", size=20, fill="#333")
+    with open(output, "w") as f: f.write(s.render())
+    print(f"Wrote {output}")
+
+def demo_shapes(output):
     s = SVG(400, 400)
-    for _ in range(n):
-        s.circle(random.randint(20,380), random.randint(20,380), random.randint(5,40),
-                 f'rgba({random.randint(0,255)},{random.randint(0,255)},{random.randint(0,255)},0.5)')
-    return s
+    for i in range(6):
+        a = i * math.pi / 3
+        cx, cy = 200 + 100*math.cos(a), 200 + 100*math.sin(a)
+        s.circle(cx, cy, 30, fill=f"hsl({i*60},80%,60%)")
+    s.circle(200, 200, 40, fill="#333")
+    with open(output, "w") as f: f.write(s.render())
+    print(f"Wrote {output}")
 
-def demo_spiral():
-    s = SVG(400, 400)
-    for i in range(200):
-        a = i * 0.1; r = i * 0.8
-        x, y = 200 + r*math.cos(a), 200 + r*math.sin(a)
-        hue = i * 1.8
-        s.circle(x, y, 3, f'hsl({hue},80%,50%)')
-    return s
+def main():
+    p = argparse.ArgumentParser(description="Generate SVG graphics")
+    p.add_argument("demo", choices=["chart","shapes"], help="Demo to generate")
+    p.add_argument("-o","--output", default="out.svg")
+    a = p.parse_args()
+    {"chart": demo_chart, "shapes": demo_shapes}[a.demo](a.output)
 
-def demo_grid():
-    s = SVG(400, 400)
-    for x in range(0, 400, 20):
-        for y in range(0, 400, 20):
-            c = f'hsl({(x+y)%360},70%,50%)'
-            s.rect(x, y, 18, 18, c)
-    return s
-
-DEMOS = {'circles': demo_circles, 'spiral': demo_spiral, 'grid': demo_grid}
-
-if __name__ == '__main__':
-    import argparse
-    p = argparse.ArgumentParser()
-    p.add_argument('demo', choices=list(DEMOS.keys()), default='spiral', nargs='?')
-    p.add_argument('-o', '--output', default='output.svg')
-    p.add_argument('-s', '--seed', type=int, default=42)
-    args = p.parse_args()
-    random.seed(args.seed)
-    svg = DEMOS[args.demo]()
-    open(args.output, 'w').write(svg.render())
-    print(f"Wrote {args.output}")
+if __name__ == "__main__": main()
