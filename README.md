@@ -1,11 +1,11 @@
 # svg-gen
 
-Generate SVG graphics programmatically (shapes, text, paths)
+SVG generator for charts and diagrams.
+
+Zero dependencies. Python 3.8+.
 
 ## Usage
 
 ```bash
 python3 svg_gen.py --help
 ```
-
-Zero dependencies. Python 3.8+.
