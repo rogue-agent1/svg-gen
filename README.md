@@ -1,17 +1,9 @@
-# svg_gen
+# svg-gen
 
-SVG image generator (shapes, text, paths)
-
-Single-file, zero-dependency Python CLI tool.
+SVG generator with chart support. Zero dependencies, single file, Python 3.8+.
 
 ## Usage
 
 ```bash
-python svg_gen.py --help
-```
-
-## Test
-
-```bash
-python -c "import svg_gen; svg_gen.test()"
+python3 svg_gen.py --help
 ```
